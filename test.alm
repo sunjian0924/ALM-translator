@@ -5,4 +5,18 @@ system description my_sys_desc
               areas,  things :: universe
               s1, s2 :: areas, things
 
+           function declarations
+              statics
+                 basic
+                    f1 : s1 -> s2
+                 defined 
+                    f2 : s1 * s2 -> booleans
+              fluents
+                 basic
+                    total f3 : things -> areas
+
+                    
+         
+
+
     structure my_struct

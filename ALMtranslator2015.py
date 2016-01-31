@@ -72,6 +72,16 @@ NO_INPUT_FILE = 'no input file'
 
 GENERAL_AXIOMS = 'test.\n\n'
 
+# =====================================
+# GLOBAL VARS/ STRUCTURES
+# =====================================
+
+static = True
+basic = True
+
+functions = {}
+
+
 # =====================================================================
 
 class SortDecl(object):
@@ -103,6 +113,73 @@ class SortDecl(object):
                 TT = TT + 'link(' + x + ', ' + y + ').\n'
         return TT
 
+# =====================================================================
+
+class FunctionTypeResetter(object):
+    def __init__(self, type_str):
+        """
+        """
+        super(FunctionTypeResetter, self).__init__()
+
+        global static
+        global basic
+        
+        if type_str == 'statics':
+            static = True
+        elif type_str == 'fluents':
+            static = False
+        elif type_str == 'basic':
+            basic = True
+        elif type_str == 'defined':
+            basic = False
+     
+    
+    def logic_program_form(self):
+        """
+        Returns the translation into ASP
+        """
+        #TODO
+        return ''                       
+            
+        
+
+# =====================================================================
+
+class FunctionDecl(object):
+    """
+    Objects of type FunctionDecl correspond to function declarations of the 
+    language of ALM. Function declarations are statements of the form:
+            f : s1 * ... * sn -> s
+    where:
+            s1, ..., sn, s   -- are sort names
+            n >= 1
+    """
+    
+    def __init__(self, total, function_name, param_sorts, return_sort):
+        """
+        Creates a new object of the type FunctionDecl given ...
+        """
+        super(FunctionDecl, self).__init__()
+        self.total = total
+        self.function_name = function_name
+        self.param_sorts = param_sorts
+        self.return_sort = return_sort
+
+        function_info = []
+        function_info.append(static)
+        function_info.append(param_sorts)
+        function_info.append(return_sort)
+
+        functions[function_name] = function_info
+
+        print functions[function_name]
+
+    def logic_program_form(self):
+        """
+        Returns the translation into ASP
+        """
+        #TODO
+        return ''
 
 # =====================================================================
 
@@ -251,6 +328,9 @@ CONSTANT  = Token('[a-z][_a-zA-Z0-9]*')
 
 COMMA     = Token(',') 
 SUBSORT   = Token('::')
+COLON     = Token(':')
+TIMES     = Token('\*')
+RARROW    = Token('\->')
 
 # =====================================
 # SORT DECLARATIONS
@@ -265,10 +345,40 @@ SORT_DECLARATIONS_HEADER = ~Token('sort declarations')
 SORT_DECLARATIONS = SORT_DECLARATIONS_HEADER & OneOrMore(SORT_DECL)
 
 # =====================================
+# FUNCTION DECLARATIONS
+# =====================================
+
+TOTAL_PARTIAL = Optional(Token('total')) > set
+
+DOMAIN = CONSTANT & ZeroOrMore(~TIMES & CONSTANT) > list
+
+FUNC_DECL = TOTAL_PARTIAL & CONSTANT & ~COLON & DOMAIN & ~RARROW & CONSTANT > args(FunctionDecl)
+
+FUNC_SECTION = OneOrMore(FUNC_DECL)
+
+FUNC_SECTION_HEADER = Or(
+        Token('basic'),
+        Token('defined')
+    ) > args(FunctionTypeResetter)
+
+FUNC_BODY = OneOrMore(FUNC_SECTION_HEADER & FUNC_SECTION)
+
+FUNC_HEADER = Or(
+        Token('statics'),
+        Token('fluents')
+    ) > args(FunctionTypeResetter)
+    
+FUNCTION_DECLARATIONS_BODY = OneOrMore(FUNC_HEADER & FUNC_BODY)
+
+FUNCTION_DECLARATIONS_HEADER = ~Token('function declarations')
+
+FUNCTION_DECLARATIONS = FUNCTION_DECLARATIONS_HEADER & FUNCTION_DECLARATIONS_BODY
+
+# =====================================
 # MODULE
 # =====================================
 
-MODULE_BODY = SORT_DECLARATIONS
+MODULE_BODY = SORT_DECLARATIONS & FUNCTION_DECLARATIONS
 
 MODULE_HEADER = ~Token('module') & CONSTANT > args(Module)
 
