@@ -1,0 +1,8 @@
+system description my_sys_desc
+    theory my_theory
+        module main
+           sort declarations
+              areas,  things :: universe
+              s1, s2 :: areas, things
+
+    structure my_struct
