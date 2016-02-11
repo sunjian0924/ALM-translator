@@ -208,7 +208,123 @@ class FunctionDecl(object):
         """
         #TODO
         s = '\n'
-        if self.return_sort == "booleans" :
+        if self.static :
+            if self.return_sort == "booleans" :
+                s = s + '% Definition of dom_' + self.function_name + '\n\n'
+                s = s + 'dom_' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ') :-\n\t' 
+                s = s + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + '),\n\t'
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ',\n\t'
+                s = s + '.\n'
+
+                s = s + 'dom_' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ') :-\n\t' 
+                s = s + '-' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + '),\n\t'
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ',\n\t'
+                s = s + '.\n\n'
+            else :
+                s = s + '% Definition of dom_' + self.function_name + '\n\n'
+                s = s + 'dom_' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ') :-\n\t' 
+                s = s + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ') = X,\n\t'
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ',\n\t'
+                s = s + ',\n\tinstance(X, ' + self.return_sort + ').\n\n'
+
+        if self.basic and not self.static :
+            if self.return_sort == "booleans" :
+                s = s + '% Definition of dom_' + self.function_name + '\n\n'
+                s = s + 'dom_' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I) :-\n\t' 
+                s = s + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I),\n\t'
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ',\n\t'
+                s = s + ',\n\tstep(I).\n'
+
+                s = s + 'dom_' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I) :-\n\t' 
+                s = s + '-' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I),\n\t'
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ',\n\t'
+                s = s + ',\n\tstep(I).\n\n'
+            else :
+                s = s + '% Definition of dom_' + self.function_name + '\n\n'
+                s = s + 'dom_' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I) :-\n\t' 
+                s = s + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I) = X,\n\t'
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ',\n\t'
+                s = s + ',\n\tinstance(X, ' + self.return_sort + '),\n\tstep(I).\n\n'
+
+        if not self.static and not self.basic :
             s = s + '% Definition of dom_' + self.function_name + '\n\n'
             s = s + 'dom_' + self.function_name + '('
             for i in range(0, len(self.param_sorts)):
@@ -216,54 +332,12 @@ class FunctionDecl(object):
                 if i < len(self.param_sorts) - 1:
                     s = s + ', '
             s = s + ') :-\n\t' 
-            s = s + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + '),\n\t'
             for i in range(0, len(self.param_sorts)):
                 s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
                 if i < len(self.param_sorts) - 1:
                     s = s + ',\n\t'
             s = s + '.\n'
-
-            s = s + 'dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') :-\n\t' 
-            s = s + '-' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + '),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + '.\n\n'
-        else :
-            s = s + '% Definition of dom_' + self.function_name + '\n\n'
-            s = s + 'dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') :-\n\t' 
-            s = s + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') = X,\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + ',\n\tinstance(X, s).\n\n'
+            
         
         if self.basic and self.static :
             s = s + '% CWA for dom_' + self.function_name + '\n\n'
@@ -400,7 +474,37 @@ class FunctionDecl(object):
                     s = s + 'X' + str(i + 1)
                     if i < len(self.param_sorts) - 1:
                         s = s + ', '
+                s = s + ', I + 1),\n\t'
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ',\n\t'
+                s = s + ',\n\tstep(I).\n'
+
+                s = s + '-' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I + 1) :-\n\t' 
+                s = s + 'dom_' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I + 1),\n\t'
+                s = s + '-' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
                 s = s + ', I),\n\t'
+                s = s + 'not' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I + 1),\n\t'
                 for i in range(0, len(self.param_sorts)):
                     s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
                     if i < len(self.param_sorts) - 1:
@@ -425,7 +529,7 @@ class FunctionDecl(object):
                     if i < len(self.param_sorts) - 1:
                         s = s + ', '
                 s = s + ', I) = X,\n\t'
-                s = s + 'not -' + self.function_name + '('
+                s = s + 'not ' + self.function_name + '('
                 for i in range(0, len(self.param_sorts)):
                     s = s + 'X' + str(i + 1)
                     if i < len(self.param_sorts) - 1:
@@ -435,28 +539,10 @@ class FunctionDecl(object):
                     s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
                     if i < len(self.param_sorts) - 1:
                         s = s + ',\n\t'
-                s = s + ',\n\tinstance(X, S),\n\t'
+                s = s + ',\n\tinstance(X, ' + self.return_sort +  '),\n\t'
                 s = s + 'step(I).\n\n'
-        if not static and not basic :
-            s = s + '% CWA for dom_' + self.function_name + '\n\n'
-            s = s + '-dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I) :-\n\t' 
-            s = s + 'not dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + ',\n\tstep(I).\n\n'
 
+        if not self.static and not self.basic :
             s = s + '% CWA for ' + self.function_name + '\n\n'
             s = s + '-' + self.function_name + '('
             for i in range(0, len(self.param_sorts)):
