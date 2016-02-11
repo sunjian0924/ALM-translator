@@ -1,0 +1,25 @@
+system description my_sys_desc
+    theory my_theory
+        module main
+           sort declarations
+              areas,  things :: universe
+              s1, s2 :: areas, things
+
+           function declarations
+              statics
+                 basic
+                    f1_bas_st : s1 -> s2
+                 defined 
+                    f2_def_st : s1 * s2 -> booleans
+              fluents
+                 basic
+                    total f3_tot_bas_flt : things -> areas
+                    f4_bas_flt : things * areas -> booleans
+                 defined
+                    f5_def_flt : things -> booleans
+
+                    
+         
+
+
+    structure my_struct
