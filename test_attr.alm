@@ -1,0 +1,37 @@
+system description my_sys_desc
+    theory my_theory
+        module main
+           sort declarations
+              areas,  things :: universe
+              s1, s2 :: areas, things
+
+              s3 :: areas
+			attributes
+                   attr1, attr2 : things
+                   attr3 : s1 * s2 -> booleans
+
+              move :: actions
+                attributes
+                   actor : agents
+                   origin, dest : areas
+
+              sequences :: universe
+                attributes
+                   component : num -> universe
+                   
+
+           function declarations
+              statics
+                 basic
+                    f1 : s1 -> s2
+                 defined 
+                    f2 : s1 * s2 -> booleans
+              fluents
+                 basic
+                    total f3 : things -> areas
+
+                    
+         
+
+
+    structure my_struct
