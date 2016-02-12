@@ -124,6 +124,9 @@ class SortDecl(object):
         Creates a new object of the type SortDecl given the list of
         sort names and the supersort.
         """
+        global crt_sorts
+        crt_sorts = new_sorts
+        
         super(SortDecl, self).__init__()
         self.new_sorts = new_sorts
         self.supersorts = supersorts
@@ -132,13 +135,64 @@ class SortDecl(object):
         """
         Returns the translation into ASP
         """
-        TT = ''
+        s = ''
         for x in self.new_sorts:
-            TT = TT + 'dom(' + x + ').\nis_a(' + x + ', nodes).\n' 
+            s = s + 'dom(' + x + ').\nis_a(' + x + ', nodes).\n' 
             for y in self.supersorts:
-                TT = TT + 'link(' + x + ', ' + y + ').\n'
-        return TT
+                s = s + 'link(' + x + ', ' + y + ').\n'
+        return s
 
+# =====================================================================
+
+class AttrDecl(object):
+    """
+    Objects of type AttrDecl correspond to attribute declarations of the 
+    language of ALM. Attribute declarations are statements of the form:
+            f1, ..., fk : s0 * ... * sn -> s
+    where:
+            f1, ..., fk  -- are attribute names, k >= 1
+            s0, ..., sn -- are sort names with n >= 0
+            (If n = 0 then the part "s0 *... * sn -> " is ommitted)
+            s -- is a sort name
+    """
+
+   
+    def __init__(self, attr_names, param_sorts, return_sort):
+        """
+        Creates a new object of the type AttrDecl given:
+        - the list of attributes declared in this attribute declaration,
+        - the list of sorts of its parameters (excludig the sort of the first
+        implicit parameter, which is the sort to which the attribute
+        declaration belongs), and
+        - the range of the attribute.
+        """
+        super(AttrDecl, self).__init__()
+        global functions
+        
+        self.attr_names = attr_names
+        self.param_sorts = param_sorts
+
+        if len(crt_sorts) > 1:
+            print 'Error: Attributes cannot be specified for multiple sorts at a time.'
+        else:
+            self.param_sorts.insert(0, crt_sorts[0])
+            
+        self.return_sort = return_sort
+
+        for attr_name in self.attr_names:
+            function_info = []
+            function_info.append(static)
+            function_info.append(self.param_sorts)
+            function_info.append(self.return_sort)
+            functions[attr_name] = function_info
+
+    def logic_program_form(self):
+        """
+        Returns the translation into ASP
+        """
+        s = ''
+        return s
+    
 # =====================================================================
 
 class FunctionTypeResetter(object):
@@ -499,7 +553,7 @@ class FunctionDecl(object):
                     if i < len(self.param_sorts) - 1:
                         s = s + ', '
                 s = s + ', I),\n\t'
-                s = s + 'not' + self.function_name + '('
+                s = s + 'not ' + self.function_name + '('
                 for i in range(0, len(self.param_sorts)):
                     s = s + 'X' + str(i + 1)
                     if i < len(self.param_sorts) - 1:
@@ -534,7 +588,7 @@ class FunctionDecl(object):
                     s = s + 'X' + str(i + 1)
                     if i < len(self.param_sorts) - 1:
                         s = s + ', '
-                s = s + ', I) != X,\n\t'
+                s = s + ', I + 1) != X,\n\t'
                 for i in range(0, len(self.param_sorts)):
                     s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
                     if i < len(self.param_sorts) - 1:
@@ -718,9 +772,17 @@ RARROW    = Token('\->')
 # SORT DECLARATIONS
 # =====================================
 
-SORT_LIST = CONSTANT & ZeroOrMore(~COMMA & CONSTANT) > set
+CT_LIST = CONSTANT & ZeroOrMore(~COMMA & CONSTANT) > list
 
-SORT_DECL = SORT_LIST & ~SUBSORT & SORT_LIST > args(SortDecl)
+ATTR_DOMAIN = Optional(CONSTANT & ZeroOrMore(~TIMES & CONSTANT) & ~RARROW) > list
+
+ATTR_DECL = CT_LIST & ~COLON & ATTR_DOMAIN & CONSTANT > args(AttrDecl)
+
+SORT_ATTRS = ~Token('attributes') & OneOrMore(ATTR_DECL)
+
+SORT_DECL_HEAD = CT_LIST & ~SUBSORT & CT_LIST > args(SortDecl)
+
+SORT_DECL = SORT_DECL_HEAD & Optional(SORT_ATTRS)
 
 SORT_DECLARATIONS_HEADER = ~Token('sort declarations')
 
@@ -732,9 +794,9 @@ SORT_DECLARATIONS = SORT_DECLARATIONS_HEADER & OneOrMore(SORT_DECL)
 
 TOTAL_PARTIAL = Optional(Token('total')) > set
 
-DOMAIN = CONSTANT & ZeroOrMore(~TIMES & CONSTANT) > list
+FUNC_DOMAIN = CONSTANT & ZeroOrMore(~TIMES & CONSTANT) & ~RARROW > list
 
-FUNC_DECL = TOTAL_PARTIAL & CONSTANT & ~COLON & DOMAIN & ~RARROW & CONSTANT > args(FunctionDecl)
+FUNC_DECL = TOTAL_PARTIAL & CONSTANT & ~COLON & FUNC_DOMAIN & CONSTANT > args(FunctionDecl)
 
 FUNC_SECTION = OneOrMore(FUNC_DECL)
 
