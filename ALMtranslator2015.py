@@ -619,6 +619,46 @@ class FunctionDecl(object):
 
 # =====================================================================
 
+class DynamicCausalLaw(object):
+	"""
+	Objects of type DynamicCausalLaw correspond to dynamic causal laws of
+	the language of ALM. Dynamic causal laws are statements of the form:
+		occurs(a) causes l if p
+	where:
+		a    -- is a variable or a constant
+		l    -- is an basic fluent literal
+		p    -- is a set of literals
+	"""
+	
+	def __init__(self, occ, head, body):
+		"""
+		Creates a new object of the type DynamicCausalLaw given: 
+		occ - the "occurs" expression represented as a list [occurs, a]
+		head - the head literal represented as a list
+		body - the body literals represented as a list
+		"""
+		super(DynamicCausalLaw, self).__init__()
+		self.occ = occ
+		self.head = head
+		self.body = body
+		self.variables = get_vars([occ, head, body])
+		
+		print self.occ
+		print self.head
+		print self.body
+		print self.variables
+		print ''
+		
+	def logic_program_form(self):
+		"""
+		Returns the translation into ASP
+		"""
+		#TODO
+		s = ''
+		return s
+	    
+# =====================================================================
+
 class SystemDescription(object):
     """
     Objects of type SystemDescription correspond to system descriptions 
@@ -761,12 +801,27 @@ class SortDeclarations(object):
 # =====================================
  
 CONSTANT  = Token('[a-z][_a-zA-Z0-9]*')
+VARIABLE  = Token('[A-Z][_a-zA-Z0-9]*')
+
+NUMBER    = Token(Integer())
 
 COMMA     = Token(',') 
 SUBSORT   = Token('::')
 COLON     = Token(':')
 TIMES     = Token('\*')
 RARROW    = Token('\->')
+
+LPAREN    = Token('\(')
+RPAREN    = Token('\)')
+EQ        = Token('=')
+NEQ       = Token('!=')
+
+ARITH_OP  = Or(
+              Token('\+'),
+              Token('\-'),
+              Token('\*'),
+              Token('/')
+            )
 
 # =====================================
 # SORT DECLARATIONS
@@ -819,10 +874,52 @@ FUNCTION_DECLARATIONS_HEADER = ~Token('function declarations')
 FUNCTION_DECLARATIONS = FUNCTION_DECLARATIONS_HEADER & FUNCTION_DECLARATIONS_BODY
 
 # =====================================
+# DYNAMIC_CAUSAL_LAW
+# =====================================
+
+CV = Or(CONSTANT, VARIABLE)
+
+CVN = Or(CV, NUMBER)
+
+DCL_OCC = Token('occurs') & ~LPAREN & CV & ~RPAREN > list
+
+
+LIT_NAME = Optional(Token('\-')) & CONSTANT > ''.join
+
+PARAMS = Optional(~LPAREN & CVN & ZeroOrMore(~COMMA & CVN) & ~RPAREN) > list
+
+BOOL_BASIC_LIT = LIT_NAME & PARAMS > list
+
+
+NON_BOOL_BASIC_LIT = CONSTANT & PARAMS & Or(EQ, NEQ) & CVN > list
+
+BASIC_LIT = Or(BOOL_BASIC_LIT, NON_BOOL_BASIC_LIT)
+
+
+ARITH_LIT = CVN & ARITH_OP & CVN & Or(EQ, NEQ) & CVN > list
+
+
+DCL_LIT = Or(BASIC_LIT, ARITH_LIT)
+
+DCL_BODY = Optional(~Token('if') & DCL_LIT & ZeroOrMore(~COMMA & DCL_LIT)) > list
+
+DYNAMIC_CAUSAL_LAW = DCL_OCC & ~Token('causes') & BASIC_LIT & DCL_BODY & ~Token('\.') > args(DynamicCausalLaw)
+
+# =====================================
 # MODULE
 # =====================================
 
-MODULE_BODY = SORT_DECLARATIONS & FUNCTION_DECLARATIONS
+#AXIOM = Or(
+#			DYNAMIC_CAUSAL_LAW,
+#			STATE_CONSTRAINT,
+#			EXECUTABILITY_CONDITION
+#			)
+			
+AXIOM = DYNAMIC_CAUSAL_LAW		
+
+AXIOMS = ~Token('axioms') & OneOrMore(AXIOM)
+
+MODULE_BODY = SORT_DECLARATIONS & FUNCTION_DECLARATIONS & Optional(AXIOMS)
 
 MODULE_HEADER = ~Token('module') & CONSTANT > args(Module)
 
@@ -866,6 +963,28 @@ def rewrite_lp(f_lp, statement):
     """
     f_lp.write(statement.logic_program_form())
 
+def flatten_list(l):
+	result = []
+	for x in l:
+		if hasattr(x, '__iter__'):
+			aux = flatten_list(x)
+			result.extend(aux)
+		else:
+			result.append(x)
+	return result
+	
+def is_variable(text):
+    return text[0].isupper()
+
+def is_constant(text):
+    return text[0].islower()
+	
+def get_vars(l):
+	result = []
+	for x in flatten_list(l):
+		if is_variable(x) :
+			result.append(x)
+	return list(set(result))
 
 # =====================================
 # PROGRAM DRIVER

@@ -1,0 +1,45 @@
+system description my_sys_desc
+    theory my_theory
+        module main
+           sort declarations
+              things, points :: universe
+              agents :: things
+
+              move :: actions
+                attributes
+                   actor : agents
+                   origin, dest : points
+                 
+           function declarations
+              statics
+                 basic
+                   symmetric_connectivity : points -> booleans
+                   transitive_connectivity : points -> booleans
+              fluents
+                 basic
+                   connected : points * points -> booleans
+                   total loc_in : things -> points
+
+                  
+         
+           axioms
+              occurs(X) causes loc_in(A) = D if 
+                           instance(X, move),
+                           actor(X) = A,
+                           dest(X) = D.
+
+              occurs(X) causes loc_in(A) != D if 
+					loc_in(A) = O,
+                           instance(X, move),
+                           -instance(X, carry),
+                           actor(X) = A,
+                           dest(X) = D,
+                           origin != D,
+                           D * 2 = A.
+
+              occurs(X) causes connected(A, B) if 
+                           instance(X, move).
+
+              occurs(X) causes -connected(A, B).
+
+    structure my_struct
