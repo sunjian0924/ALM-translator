@@ -262,6 +262,82 @@ class FunctionDecl(object):
         """
         #TODO
         s = '\n'
+        s = s + '% CWA for dom_' + self.function_name + '\n\n'
+        s = s + '-dom_' + self.function_name + '('
+        for i in range(0, len(self.param_sorts)):
+            s = s + 'X' + str(i + 1)
+            if i < len(self.param_sorts) - 1:
+                s = s + ', '
+        s = s + ') :-\n\t' 
+        s = s + 'not dom_' + self.function_name + '('
+        for i in range(0, len(self.param_sorts)):
+            s = s + 'X' + str(i + 1)
+            if i < len(self.param_sorts) - 1:
+                s = s + ', '
+        s = s + '),\n\t'
+        for i in range(0, len(self.param_sorts)):
+            s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+            if i < len(self.param_sorts) - 1:
+                s = s + ',\n\t'
+        s = s + '.\n\n'
+
+            
+        if self.return_sort == "booleans" :
+            s = s + '% Definition of dom_' + self.function_name + '\n\n'
+            s = s + 'dom_' + self.function_name + '('
+            for i in range(0, len(self.param_sorts)):
+                s = s + 'X' + str(i + 1)
+                if i < len(self.param_sorts) - 1:
+                    s = s + ', '
+            s = s + ') :-\n\t' 
+            s = s + self.function_name + '('
+            for i in range(0, len(self.param_sorts)):
+                s = s + 'X' + str(i + 1)
+                if i < len(self.param_sorts) - 1:
+                    s = s + ', '
+            s = s + '),\n\t'
+            for i in range(0, len(self.param_sorts)):
+                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                if i < len(self.param_sorts) - 1:
+                    s = s + ',\n\t'
+            s = s + '.\n'
+
+            s = s + 'dom_' + self.function_name + '('
+            for i in range(0, len(self.param_sorts)):
+                s = s + 'X' + str(i + 1)
+                if i < len(self.param_sorts) - 1:
+                    s = s + ', '
+            s = s + ') :-\n\t' 
+            s = s + '-' + self.function_name + '('
+            for i in range(0, len(self.param_sorts)):
+                s = s + 'X' + str(i + 1)
+                if i < len(self.param_sorts) - 1:
+                    s = s + ', '
+            s = s + '),\n\t'
+            for i in range(0, len(self.param_sorts)):
+                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                if i < len(self.param_sorts) - 1:
+                    s = s + ',\n\t'
+            s = s + '.\n\n'
+        else :
+            s = s + '% Definition of dom_' + self.function_name + '\n\n'
+            s = s + 'dom_' + self.function_name + '('
+            for i in range(0, len(self.param_sorts)):
+                s = s + 'X' + str(i + 1)
+                if i < len(self.param_sorts) - 1:
+                    s = s + ', '
+            s = s + ') :-\n\t' 
+            s = s + self.function_name + '('
+            for i in range(0, len(self.param_sorts)):
+                s = s + 'X' + str(i + 1)
+                if i < len(self.param_sorts) - 1:
+                    s = s + ', '
+            s = s + ') = X,\n\t'
+            for i in range(0, len(self.param_sorts)):
+                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                if i < len(self.param_sorts) - 1:
+                    s = s + ',\n\t'
+            s = s + ',\n\tinstance(X, ' + self.return_sort + ').\n\n'          
         if self.static :
             if self.return_sort == "booleans" :
                 s = s + '% Definition of dom_' + self.function_name + '\n\n'
@@ -615,6 +691,34 @@ class FunctionDecl(object):
                 if i < len(self.param_sorts) - 1:
                     s = s + ',\n\t'
             s = s + ',\n\tstep(I).\n\n'
+        if hasattr(self, 'total') : 
+            if self.static :
+                s = s + '% ' + self.function_name + ' is a total function'
+                s = s + ':- -dom_' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + '),\n\t'
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ',\n\t'
+                s = s + '.\n\n'
+            else :
+                s = s + '% ' + self.function_name + ' is a total function'
+                s = s + ':- -dom_' + self.function_name + '('
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'X' + str(i + 1)
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ', '
+                s = s + ', I),\n\t'
+                for i in range(0, len(self.param_sorts)):
+                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
+                    if i < len(self.param_sorts) - 1:
+                        s = s + ',\n\t'
+                s = s + ',\n\tstep(I).\n\n'
+
         return s
 
 # =====================================================================
