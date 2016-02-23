@@ -107,6 +107,7 @@ basic = True
 functions = {}
 
 
+
 # =====================================================================
 
 class SortDecl(object):
@@ -254,7 +255,7 @@ class FunctionDecl(object):
         function_info.append(return_sort)
         functions[function_name] = function_info
 
-        print functions
+        #print functions
 
     def logic_program_form(self):
         """
@@ -281,7 +282,7 @@ class FunctionDecl(object):
                 s = s + ',\n\t'
         s = s + '.\n\n'
 
-            
+
         if self.return_sort == "booleans" :
             s = s + '% Definition of dom_' + self.function_name + '\n\n'
             s = s + 'dom_' + self.function_name + '('
@@ -706,7 +707,7 @@ class FunctionDecl(object):
                         s = s + ',\n\t'
                 s = s + '.\n\n'
             else :
-                s = s + '% ' + self.function_name + ' is a total function'
+                s = s + '% ' + self.function_name + ' is a total function\n\n'
                 s = s + ':- -dom_' + self.function_name + '('
                 for i in range(0, len(self.param_sorts)):
                     s = s + 'X' + str(i + 1)
@@ -751,15 +752,121 @@ class DynamicCausalLaw(object):
 		print self.head
 		print self.body
 		print self.variables
-		print ''
-		
-	def logic_program_form(self):
-		"""
-		Returns the translation into ASP
-		"""
-		#TODO
-		s = ''
-		return s
+		print functions
+
+
+        def logic_program_form(self):
+            """
+            Returns the translation into ASP
+            """
+            #TODO
+            # determine step variable
+            a_set = set()
+            step = ''
+            if 'I' in self.variables:
+                i = 1
+                while 'I' + str(i) not in self.variables :
+                    i += 1
+                step = 'I' + str(i)
+            else :
+                step = 'I'
+            s = ''
+            # assemble head
+            s = s + self.head[0] + '('
+            for i in range(0, len(self.head[1])) :
+                s = s + self.head[1][i]
+                if i < len(self.head[1]) - 1:
+                    s = s + ', '
+            s = s + ', ' + step + ' + 1) '
+            for i in range(2, len(self.head)) : 
+                s = s + self.head[i]
+                if i < len(self.head) - 1:
+                    s = s + ' '
+            s = s + ' :-\n\t'
+
+            functionName = ''
+            if self.head[0][0] == '-' :
+                functionName = self.head[0][1:]
+            else :
+                functionName = self.head[0]
+            if functionName in functions :
+                for i in range(0, len(self.head[1])) :
+                    temps = "instance(" + self.head[1][i] + ", " + functions[functionName][1][i] + ")"   
+                    a_set.add(temps)
+
+            # occ
+            temps = ''
+            temps = temps + self.occ[0] + '('
+            for i in range(1, len(self.occ)) :
+                temps = temps + self.occ[i]
+                if i < len(self.occ) - 1:
+                    temps = temps + ', '
+            temps = temps + ', ' + step + ')'
+            a_set.add(temps)
+            for i in range(1, len(self.occ)) :
+                a_set.add('instance(' + self.occ[i] + ', actions)') 
+
+            # body
+            for j in range(0, len(self.body)):
+                # literal is arithmetic expression
+                if isinstance(self.body[j][1], str):
+                    temps = ''
+                    for i in range(0, len(self.body[j])):
+                        temps = temps + self.body[j][i]
+                        if i < len(self.body[j]) - 1:
+                            temps = temps + ' '
+                    a_set.add(temps)
+                else:
+                    if self.body[j][0][0] == '-' :
+                        functionName = self.body[j][0][1:]
+                    else :
+                        functionName = self.body[j][0]
+                    if functionName in functions:
+                        for i in range(0, len(self.body[j][1])):
+                            temps = "instance(" + self.body[j][1][i] + ", " + functions[functionName][1][i] + ")"   
+                            a_set.add(temps)
+                        if len(temps) > 3:
+                            temps = "instance(" + self.body[j][3] + ", " + functions[functionName][2] + ")"   
+                            a_set.add(temps)
+                        # static
+                        if functions[functionName][0]:  
+                            temps = ''
+                            temps = temps + self.body[j][0] + '('
+                            for i in range(0, len(self.body[j][1])):
+                                temps = temps + self.body[j][1][i]
+                                if i < len(self.body[j][1]) - 1:
+                                    temps = temps + ', '
+                            temps = temps + ') '
+                            for i in range(2, len(self.body[j])):
+                                temps = temps + self.body[j][i]
+                                if i < len(self.body[j]) - 1:
+                                    temps = temps + ' '
+                            a_set.add(temps)
+                        else :
+                            # fluent
+                            temps = ''
+                            temps = temps + self.body[j][0] + '('
+                            for i in range(0, len(self.body[j][1])):
+                                temps = temps + self.body[j][1][i]
+                                if i < len(self.body[j][1]) - 1:
+                                    temps = temps + ', '
+                            temps = temps + ', ' + step + ') '
+                            for i in range(2, len(self.body[j])):
+                                temps = temps + self.body[j][i]
+                                if i < len(self.body[j]) - 1:
+                                    temps = temps + ' '
+                            a_set.add(temps)
+
+            i = 0
+            print a_set
+            for item in a_set:
+                s = s + item
+                if i < len(a_set) - 1:
+                    s = s + ',\n\t'
+                i = i + 1
+            s = s + '.\n'
+            return s
+
 	    
 # =====================================================================
 
