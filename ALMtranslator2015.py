@@ -858,13 +858,12 @@ class DynamicCausalLaw(object):
                             a_set.add(temps)
 
             i = 0
-            print a_set
             for item in a_set:
                 s = s + item
                 if i < len(a_set) - 1:
                     s = s + ',\n\t'
                 i = i + 1
-            s = s + '.\n'
+            s = s + '.\n\n'
             return s
 
 	    
