@@ -225,7 +225,23 @@ class FunctionTypeResetter(object):
         
 
 # =====================================================================
+def concatenateParams(params, ending):
+    s = ''
+    for i in range(0, len(params)):
+        s = s + 'X' + str(i + 1)
+        if i < len(params) - 1:
+            s = s + ', '
+    s = s + ending
+    return s
 
+def constructInstance(params, ending):
+    s = ''
+    for i in range(0, len(params)):
+        s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + params[i] + ')'
+        if i < len(params) - 1:
+            s = s + ',\n\t'
+    s = s + ending
+    return s
 class FunctionDecl(object):
     """
     Objects of type FunctionDecl correspond to function declarations of the 
@@ -255,474 +271,239 @@ class FunctionDecl(object):
         function_info.append(return_sort)
         functions[function_name] = function_info
 
-        #print functions
+    def forAllFunctions(self):
+        s = ''
+        s = s + '% CWA for dom_' + self.function_name + '\n\n'
+        s = s + '-dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t')
+        s = s + 'not dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, '),\n\t')     
+        s = s + constructInstance(self.param_sorts, '.\n\n')
+        return s
+    def whenReturnSortBooleans(self):
+        s = ''
+        s = s + '% Definition of dom_' + self.function_name + '\n\n'
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t')
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, '),\n\t') 
+        s = s + constructInstance(self.param_sorts, '.\n\n')
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t')
+        s = s + '-' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, '),\n\t') 
+        s = s + constructInstance(self.param_sorts, '.\n\n')
+        return s
+    def whenReturnSortNotBooleans(self):
+        s = ''
+        s = s + '% Definition of dom_' + self.function_name + '\n\n'
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t') 
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') = X,\n\t') 
+        s = s + constructInstance(self.param_sorts, ',\n\tinstance(X, ' + self.return_sort + ').\n\n')
+        return s
+    def whenStaticAndReturnSortBooleans(self):
+        s = ''
+        s = s + '% Definition of dom_' + self.function_name + '\n\n'
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t')
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, '),\n\t') 
+        s = s + constructInstance(self.param_sorts, '.\n\n')
 
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t') 
+        s = s + '-' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, '),\n\t') 
+        s = s + constructInstance(self.param_sorts, '.\n\n')
+        return s
+    def whenStaticAndReturnSortNotBooleans(self):
+        s = ''
+        s = s + '% Definition of dom_' + self.function_name + '\n\n'
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t')  
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') = X,\n\t') 
+        s = s + constructInstance(self.param_sorts, ',\n\tinstance(X, ' + self.return_sort + ').\n\n')
+        return s
+    def whenBasicNotStaticAndReturnSortBooleans(self):
+        s = ''
+        s = s + '% Definition of dom_' + self.function_name + '\n\n'
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I) :-\n\t') 
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I),\n\t') 
+        s = s + constructInstance(self.param_sorts, ',\n\tstep(I).\n\n')
+
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I) :-\n\t') 
+        s = s + '-' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I),\n\t') 
+        s = s + constructInstance(self.param_sorts, ',\n\tstep(I).\n\n')
+        return s
+    def whenBasicNotStaticAndReturnSortNotBooleans(self):
+        s = ''
+        s = s + '% Definition of dom_' + self.function_name + '\n\n'
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I) :-\n\t')  
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I) = X,\n\t') 
+        s = s + constructInstance(self.param_sorts, ',\n\tinstance(X, ' + self.return_sort + '),\n\tstep(I).\n\n')
+        return s
+    def whenNotBasicNotStatic(self):
+        s = ''
+        s = s + '% Definition of dom_' + self.function_name + '\n\n'
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t') 
+        s = s + constructInstance(self.param_sorts, '.\n\n')
+        s = s + '% CWA for ' + self.function_name + '\n\n'
+        s = s + '-' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I) :-\n\t')            
+        s = s + 'not ' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I),\n\t')
+        s = s + constructInstance(self.param_sorts, ',\n\tstep(I).\n\n')
+        return s
+    def whenBasicStatic(self):
+        s = ''
+        s = s + '% CWA for dom_' + self.function_name + '\n\n'
+        s = s + '-dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t') 
+        s = s + 'not dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, '),\n\t') 
+        s = s + constructInstance(self.param_sorts, '.\n\n')
+        return s
+    def whenNotBasicStatic(self):
+        s = ''
+        s = s + '% CWA for dom_' + self.function_name + '\n\n'
+        s = s + '-dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t')
+        s = s + 'not dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, '),\n\t') 
+        s = s + constructInstance(self.param_sorts, '.\n\n')
+        s = s + '% CWA for ' + self.function_name + '\n\n'
+        s = s + '-' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ') :-\n\t')
+        s = s + 'not ' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, '),\n\t')        
+        s = s + constructInstance(self.param_sorts, '.\n\n')
+        return s
+    def whenBasicNotStatic(self):
+        s = ''
+        s = s + '% Inertial Axioms for dom_' + self.function_name + '\n\n'
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1) :-\n\t')          
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I),\n\t')     
+        s = s + 'not -dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1),\n\t') 
+        s = s + constructInstance(self.param_sorts, ',\n\tstep(I).\n\n')
+        
+        s = s + '-dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1) :-\n\t') 
+        s = s + '-dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I),\n\t') 
+        s = s + 'not dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1),\n\t')            
+        s = s + constructInstance(self.param_sorts, ',\n\tstep(I).\n\n')
+
+        s = s + '% Inertial Axioms for ' + self.function_name + '\n\n'
+        return s
+    def whenBasicNotStaticAndReturnSortBooleansMore(self):
+        s = ''
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1) :-\n\t') 
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1),\n\t')
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I),\n\t') 
+        s = s + 'not -' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1),\n\t')                 
+        s = s + constructInstance(self.param_sorts, ',\n\tstep(I).\n\n')
+        s = s + '-' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1) :-\n\t') 
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1),\n\t')
+        s = s + '-' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I),\n\t') 
+        s = s + 'not ' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1),\n\t')               
+        s = s + constructInstance(self.param_sorts, ',\n\tstep(I).\n\n')
+        return s
+    def whenBasicNotStaticAndReturnSortNotBooleansMore(self):
+        s = ''
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1) = X :-\n\t')               
+        s = s + 'dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1),\n\t') 
+        s = s + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I) = X,\n\t')                 
+        s = s + 'not ' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I + 1) != X,\n\t') 
+        s = s + constructInstance(self.param_sorts, ',\n\tinstance(X, ' + self.return_sort +  '),\n\tstep(I).\n\n')
+        return s
+    def whenTotalStatic(self):
+        s = ''
+        s = s + '% ' + self.function_name + ' is a total function\n'
+        s = s + ':- -dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, '),\n\t')
+        s = s + constructInstance(self.param_sorts, '.\n\n')
+        return s
+    def whenTotalNotStatic(self):
+        s = ''
+        s = s + '% ' + self.function_name + ' is a total function\n\n'
+        s = s + ':- -dom_' + self.function_name + '('
+        s = s + concatenateParams(self.param_sorts, ', I),\n\t')
+        s = s + constructInstance(self.param_sorts, ',\n\tstep(I).\n\n')
+        return s
     def logic_program_form(self):
         """
         Returns the translation into ASP
         """
         #TODO
         s = '\n'
-        s = s + '% CWA for dom_' + self.function_name + '\n\n'
-        s = s + '-dom_' + self.function_name + '('
-        for i in range(0, len(self.param_sorts)):
-            s = s + 'X' + str(i + 1)
-            if i < len(self.param_sorts) - 1:
-                s = s + ', '
-        s = s + ') :-\n\t' 
-        s = s + 'not dom_' + self.function_name + '('
-        for i in range(0, len(self.param_sorts)):
-            s = s + 'X' + str(i + 1)
-            if i < len(self.param_sorts) - 1:
-                s = s + ', '
-        s = s + '),\n\t'
-        for i in range(0, len(self.param_sorts)):
-            s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-            if i < len(self.param_sorts) - 1:
-                s = s + ',\n\t'
-        s = s + '.\n\n'
-
-
+        s = s + self.forAllFunctions()
         if self.return_sort == "booleans" :
-            s = s + '% Definition of dom_' + self.function_name + '\n\n'
-            s = s + 'dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') :-\n\t' 
-            s = s + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + '),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + '.\n'
-
-            s = s + 'dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') :-\n\t' 
-            s = s + '-' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + '),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + '.\n\n'
+            s = s + self.whenReturnSortBooleans()
         else :
-            s = s + '% Definition of dom_' + self.function_name + '\n\n'
-            s = s + 'dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') :-\n\t' 
-            s = s + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') = X,\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + ',\n\tinstance(X, ' + self.return_sort + ').\n\n'          
+            s = s + self.whenReturnSortNotBooleans()
+         
         if self.static :
             if self.return_sort == "booleans" :
-                s = s + '% Definition of dom_' + self.function_name + '\n\n'
-                s = s + 'dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ') :-\n\t' 
-                s = s + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + '),\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + '.\n'
-
-                s = s + 'dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ') :-\n\t' 
-                s = s + '-' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + '),\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + '.\n\n'
+                s = s + self.whenStaticAndReturnSortBooleans()
             else :
-                s = s + '% Definition of dom_' + self.function_name + '\n\n'
-                s = s + 'dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ') :-\n\t' 
-                s = s + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ') = X,\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + ',\n\tinstance(X, ' + self.return_sort + ').\n\n'
-
+                s = s + self.whenStaticAndReturnSortNotBooleans()
         if self.basic and not self.static :
             if self.return_sort == "booleans" :
-                s = s + '% Definition of dom_' + self.function_name + '\n\n'
-                s = s + 'dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I) :-\n\t' 
-                s = s + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I),\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + ',\n\tstep(I).\n'
-
-                s = s + 'dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I) :-\n\t' 
-                s = s + '-' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I),\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + ',\n\tstep(I).\n\n'
+                s = s + self.whenBasicNotStaticAndReturnSortBooleans()
             else :
-                s = s + '% Definition of dom_' + self.function_name + '\n\n'
-                s = s + 'dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I) :-\n\t' 
-                s = s + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I) = X,\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + ',\n\tinstance(X, ' + self.return_sort + '),\n\tstep(I).\n\n'
+                s = s + self.whenBasicNotStaticAndReturnSortNotBooleans()
 
         if not self.static and not self.basic :
-            s = s + '% Definition of dom_' + self.function_name + '\n\n'
-            s = s + 'dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') :-\n\t' 
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + '.\n'
-            
-        
+            s = s + self.whenNotBasicNotStatic()
         if self.basic and self.static :
-            s = s + '% CWA for dom_' + self.function_name + '\n\n'
-            s = s + '-dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') :-\n\t' 
-            s = s + 'not dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + '),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + '.\n\n'
-
+            s = s + self.whenBasicStatic()
         if not self.basic and self.static :
-            s = s + '% CWA for dom_' + self.function_name + '\n\n'
-            s = s + '-dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') :-\n\t' 
-            s = s + 'not dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + '),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + '.\n\n'
-
-            s = s + '% CWA for ' + self.function_name + '\n\n'
-            s = s + '-' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ') :-\n\t' 
-            s = s + 'not ' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + '),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + '.\n\n'
-
-
+            s = s + self.whenNotBasicStatic()
         if self.basic and not self.static :
-            s = s + '% Inertial Axioms for dom_' + self.function_name + '\n\n'
-            s = s + 'dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I + 1) :-\n\t' 
-            s = s + 'dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I),\n\t'
-            s = s + 'not -dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I + 1),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + ',\n\tstep(I).\n\n'
-
-            s = s + '-dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I + 1) :-\n\t' 
-            s = s + '-dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I),\n\t'
-            s = s + 'not dom_' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I + 1),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + ',\n\tstep(I).\n\n'
-
-            s = s + '% Inertial Axioms for ' + self.function_name + '\n\n'
+            s = s + self.whenBasicNotStatic()
             if self.return_sort == "booleans" :
-                s = s + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I + 1) :-\n\t' 
-                s = s + 'dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I + 1),\n\t'
-                s = s + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I),\n\t'
-                s = s + 'not -' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I + 1),\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + ',\n\tstep(I).\n'
-
-                s = s + '-' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I + 1) :-\n\t' 
-                s = s + 'dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I + 1),\n\t'
-                s = s + '-' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I),\n\t'
-                s = s + 'not ' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I + 1),\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + ',\n\tstep(I).\n\n'
+                s = s + self.whenBasicNotStaticAndReturnSortBooleansMore()
             else :
-                s = s + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I + 1) = X :-\n\t' 
-                s = s + 'dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I + 1),\n\t'
-                s = s + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I) = X,\n\t'
-                s = s + 'not ' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I + 1) != X,\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + ',\n\tinstance(X, ' + self.return_sort +  '),\n\t'
-                s = s + 'step(I).\n\n'
+                s = s + self.whenBasicNotStaticAndReturnSortNotBooleansMore()
 
         if not self.static and not self.basic :
-            s = s + '% CWA for ' + self.function_name + '\n\n'
-            s = s + '-' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I) :-\n\t' 
-            s = s + 'not ' + self.function_name + '('
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'X' + str(i + 1)
-                if i < len(self.param_sorts) - 1:
-                    s = s + ', '
-            s = s + ', I),\n\t'
-            for i in range(0, len(self.param_sorts)):
-                s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                if i < len(self.param_sorts) - 1:
-                    s = s + ',\n\t'
-            s = s + ',\n\tstep(I).\n\n'
+            s = s + self.whenNotBasicNotStatic()
+
         if hasattr(self, 'total') : 
             if self.static :
-                s = s + '% ' + self.function_name + ' is a total function\n'
-                s = s + ':- -dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + '),\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + '.\n\n'
+                s = s + self.whenTotalStatic()
             else :
-                s = s + '% ' + self.function_name + ' is a total function\n\n'
-                s = s + ':- -dom_' + self.function_name + '('
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'X' + str(i + 1)
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ', '
-                s = s + ', I),\n\t'
-                for i in range(0, len(self.param_sorts)):
-                    s = s + 'instance' + '(' + 'X' + str(i+1) + ', ' + self.param_sorts[i] + ')'
-                    if i < len(self.param_sorts) - 1:
-                        s = s + ',\n\t'
-                s = s + ',\n\tstep(I).\n\n'
-
+                s = s + self.whenTotalNotStatic()
         return s
 
 # =====================================================================
+
 
 class DynamicCausalLaw(object):
 	"""
@@ -754,22 +535,15 @@ class DynamicCausalLaw(object):
 		print self.variables
 		print functions
 
-
-        def logic_program_form(self):
-            """
-            Returns the translation into ASP
-            """
-            #TODO
-            # determine step variable
-            a_set = set()
-            step = ''
+        def determineStepVariable(self):
             if 'I' in self.variables:
                 i = 1
                 while 'I' + str(i) not in self.variables :
                     i += 1
-                step = 'I' + str(i)
+                return 'I' + str(i)
             else :
-                step = 'I'
+                return 'I'
+        def assembleHead(self, a_set, step):
             s = ''
             # assemble head
             s = s + self.head[0] + '('
@@ -793,8 +567,8 @@ class DynamicCausalLaw(object):
                 for i in range(0, len(self.head[1])) :
                     temps = "instance(" + self.head[1][i] + ", " + functions[functionName][1][i] + ")"   
                     a_set.add(temps)
-
-            # occ
+            return s
+        def assembleOCC(self, a_set, step):
             temps = ''
             temps = temps + self.occ[0] + '('
             for i in range(1, len(self.occ)) :
@@ -805,17 +579,68 @@ class DynamicCausalLaw(object):
             a_set.add(temps)
             for i in range(1, len(self.occ)) :
                 a_set.add('instance(' + self.occ[i] + ', actions)') 
-
-            # body
+        def dealWithArithmeticExpression(self, a_set, j):
+            temps = ''
+            for i in range(0, len(self.body[j])):
+                temps = temps + self.body[j][i]
+                if i < len(self.body[j]) - 1:
+                    temps = temps + ' '
+            a_set.add(temps)
+        def dealWithStaticExpression(self, a_set, j):
+            temps = ''
+            temps = temps + self.body[j][0] + '('
+            for i in range(0, len(self.body[j][1])):
+                temps = temps + self.body[j][1][i]
+                if i < len(self.body[j][1]) - 1:
+                    temps = temps + ', '
+            temps = temps + ') '
+            for i in range(2, len(self.body[j])):
+                temps = temps + self.body[j][i]
+                if i < len(self.body[j]) - 1:
+                    temps = temps + ' '
+            a_set.add(temps)
+        def dealWithFluentExpression(self, a_set, j, step):
+            temps = ''
+            temps = temps + self.body[j][0] + '('
+            for i in range(0, len(self.body[j][1])):
+                temps = temps + self.body[j][1][i]
+                if i < len(self.body[j][1]) - 1:
+                    temps = temps + ', '
+            temps = temps + ', ' + step + ') '
+            for i in range(2, len(self.body[j])):
+                temps = temps + self.body[j][i]
+                if i < len(self.body[j]) - 1:
+                    temps = temps + ' '
+            a_set.add(temps)
+        def dealWithOtherExpression(self, a_set, j):
+            temps = ''
+            temps = temps + self.body[j][0] + '('
+            for i in range(0, len(self.body[j][1])):
+                temps = temps + self.body[j][1][i]
+                if i < len(self.body[j][1]) - 1:
+                    temps = temps + ', '
+            temps = temps + ')'
+            for i in range(2, len(self.body[j])):
+                temps = temps + self.body[j][i]
+                if i < len(self.body[j]) - 1:
+                    temps = temps + ' '
+            a_set.add(temps)
+        def assembleAllExpression(self, a_set):
+            s = ''
+            i = 0
+            for item in a_set:
+                s = s + item
+                if i < len(a_set) - 1:
+                    s = s + ',\n\t'
+                i = i + 1
+            s = s + '.\n\n'
+            return s
+        def assembleBody(self, a_set, step):
+            s = ''
             for j in range(0, len(self.body)):
-                # literal is arithmetic expression
+                # literal is an arithmetic expression
                 if isinstance(self.body[j][1], str):
-                    temps = ''
-                    for i in range(0, len(self.body[j])):
-                        temps = temps + self.body[j][i]
-                        if i < len(self.body[j]) - 1:
-                            temps = temps + ' '
-                    a_set.add(temps)
+                    self.dealWithArithmeticExpression(a_set, j)
                 else:
                     if self.body[j][0][0] == '-' :
                         functionName = self.body[j][0][1:]
@@ -830,54 +655,30 @@ class DynamicCausalLaw(object):
                             a_set.add(temps)
                         # static
                         if functions[functionName][0]:  
-                            temps = ''
-                            temps = temps + self.body[j][0] + '('
-                            for i in range(0, len(self.body[j][1])):
-                                temps = temps + self.body[j][1][i]
-                                if i < len(self.body[j][1]) - 1:
-                                    temps = temps + ', '
-                            temps = temps + ') '
-                            for i in range(2, len(self.body[j])):
-                                temps = temps + self.body[j][i]
-                                if i < len(self.body[j]) - 1:
-                                    temps = temps + ' '
-                            a_set.add(temps)
+                            self.dealWithStaticExpression(a_set, j)
                         else :
                             # fluent
-                            temps = ''
-                            temps = temps + self.body[j][0] + '('
-                            for i in range(0, len(self.body[j][1])):
-                                temps = temps + self.body[j][1][i]
-                                if i < len(self.body[j][1]) - 1:
-                                    temps = temps + ', '
-                            temps = temps + ', ' + step + ') '
-                            for i in range(2, len(self.body[j])):
-                                temps = temps + self.body[j][i]
-                                if i < len(self.body[j]) - 1:
-                                    temps = temps + ' '
-                            a_set.add(temps)
+                            self.dealWithFluentExpression(a_set, j, step)
                     else:
-                        temps = ''
-                        temps = temps + self.body[j][0] + '('
-                        for i in range(0, len(self.body[j][1])):
-                            temps = temps + self.body[j][1][i]
-                            if i < len(self.body[j][1]) - 1:
-                                temps = temps + ', '
-                        temps = temps + ')'
-                        for i in range(2, len(self.body[j])):
-                            temps = temps + self.body[j][i]
-                            if i < len(self.body[j]) - 1:
-                                temps = temps + ' '
-                        a_set.add(temps)
+                        self.dealWithOtherExpression(a_set, j)
+            s = s + self.assembleAllExpression(a_set)      
+            return s
 
-
-            i = 0
-            for item in a_set:
-                s = s + item
-                if i < len(a_set) - 1:
-                    s = s + ',\n\t'
-                i = i + 1
-            s = s + '.\n\n'
+        def logic_program_form(self):
+            """
+            Returns the translation into ASP
+            """
+            #TODO
+            # determine step variable
+            a_set = set()
+            step = self.determineStepVariable()
+            s = ''
+            # assemble head
+            s = s + self.assembleHead(a_set, step)
+            # occ
+            self.assembleOCC(a_set, step)
+            # body
+            s = s + self.assembleBody(a_set, step)
             return s
 
 	    
