@@ -694,7 +694,7 @@ class FunctionDecl(object):
             s = s + ',\n\tstep(I).\n\n'
         if hasattr(self, 'total') : 
             if self.static :
-                s = s + '% ' + self.function_name + ' is a total function'
+                s = s + '% ' + self.function_name + ' is a total function\n'
                 s = s + ':- -dom_' + self.function_name + '('
                 for i in range(0, len(self.param_sorts)):
                     s = s + 'X' + str(i + 1)
@@ -856,6 +856,20 @@ class DynamicCausalLaw(object):
                                 if i < len(self.body[j]) - 1:
                                     temps = temps + ' '
                             a_set.add(temps)
+                    else:
+                        temps = ''
+                        temps = temps + self.body[j][0] + '('
+                        for i in range(0, len(self.body[j][1])):
+                            temps = temps + self.body[j][1][i]
+                            if i < len(self.body[j][1]) - 1:
+                                temps = temps + ', '
+                        temps = temps + ')'
+                        for i in range(2, len(self.body[j])):
+                            temps = temps + self.body[j][i]
+                            if i < len(self.body[j]) - 1:
+                                temps = temps + ' '
+                        a_set.add(temps)
+
 
             i = 0
             for item in a_set:
