@@ -34,7 +34,7 @@ system description my_sys_desc
                            -instance(X, carry),
                            actor(X) = A,
                            dest(X) = D,
-                           origin != D,
+                           origin(X) != D,
                            D * 2 = A.
 
               occurs(X) causes connected(A, B) if 
